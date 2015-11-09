@@ -15,6 +15,9 @@ module Crouter
       @@prefix = old_prefix
     end
 
+    def self.prefix
+      @@prefix
+    end
 
     def initialize(pattern, @action : (HTTP::Request, HTTP::Params) -> HTTP::Response)
       pattern = "#{@@prefix}#{pattern}"

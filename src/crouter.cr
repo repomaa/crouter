@@ -6,17 +6,22 @@ module Crouter
     {% methods = %i(GET POST PUT PATCH DELETE) %}
     ROUTES = {
       {% for method in methods %}
-        {{method.id}}: [] of Route,
+        {{method.id}}: {} of String => Array(Route),
       {% end %}
     }
 
-    def self.route(request)
+    def self.route(request) : HTTP::Response
       case(request.method)
       {% for method in methods %}
         when {{method.id.stringify}}
-          ROUTES[{{method}}].each do |route|
-            next unless match = route.match(request.path || "")
-            return route.call_action(request, match)
+          path = request.path || ""
+          (1...path.size).each do |i|
+            path_slice = path[0..-i]
+            next unless routes = ROUTES[{{method}}][path_slice]?
+            routes.each do |route|
+              next unless match = route.match(path)
+              return route.call_action(request, match)
+            end
           end
       {% end %}
       end
@@ -39,12 +44,16 @@ module Crouter
         \{% elsif !action.is_a?(FunLiteral) %}
            \{% raise(action_error) %}
         \{% end %}
-        ROUTES[{{method}}] << Route.new(\{{pattern}}, \{{action.id}})
+        \{% static_part = %["\#{Route.prefix}#{pattern.id}".gsub(/(\\:|\\().*/, "")] %}
+        ROUTES[{{method}}][\{{static_part.id}}] ||= [] of Route
+        ROUTES[{{method}}][\{{static_part.id}}] << Route.new(\{{pattern}}, \{{action.id}})
       end
 
       macro {{method.downcase.id}}(pattern)
         \{% action = "-> (request : HTTP::Request, params : HTTP::Params) { #{yield} }" %}
-        ROUTES[{{method}}] << Route.new(\{{pattern}}, \{{action.id}})
+        \{% static_part = %["\#{Route.prefix}#{pattern.id}".gsub(/(\\:|\\().*/, "")] %}
+        ROUTES[{{method}}][\{{static_part.id}}] ||= [] of Route
+        ROUTES[{{method}}][\{{static_part.id}}] << Route.new(\{{pattern}}, \{{action.id}})
       end
     {% end %}
   end

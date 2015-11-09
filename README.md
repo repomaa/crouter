@@ -13,19 +13,17 @@ A standalone router for crystal
 ## Benchmark results
 
 Benchmarked with non-trivial route patterns. See
-[src/benchmark.cr](src/benchmark.cr)
+[src/benchmark.cr](src/benchmark.cr). Due to performance optimizations
+compile-time increases with the amount of routes. As seen in the results
+however, the amount affects the throughput only verly little.
 
 ```
 requests per second
-without router (raw server throughput)   9.86k (± 9.70%)       fastest
-         through router with 32 routes   8.68k (± 6.35%)  1.13× slower
-         through router with 64 routes   8.82k (± 9.57%)  1.12× slower
-        through router with 128 routes   7.76k (± 8.71%)  1.27× slower
-        through router with 256 routes   6.33k (± 5.79%)  1.56× slower
-        through router with 512 routes    5.1k (± 3.58%)  1.93× slower
-       through router with 1024 routes   3.41k (± 4.22%)  2.89× slower
-       through router with 2048 routes   2.02k (± 8.13%)  4.88× slower
-       through router with 4096 routes    939  (±23.32%) 10.50× slower
+without router (raw server throughput)  11.19k (±11.00%)       fastest
+         through router with 32 routes  10.43k (±10.47%)  1.07× slower
+         through router with 64 routes  10.75k (± 9.21%)  1.04× slower
+        through router with 128 routes  10.61k (± 9.49%)  1.05× slower
+        through router with 256 routes  10.39k (± 9.92%)  1.08× slower
 ```
 
 ## Installation

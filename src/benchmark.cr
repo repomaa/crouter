@@ -1,7 +1,7 @@
 require "./crouter"
 require "benchmark"
 
-{% for i in 5..12 %}
+{% for i in 5..8 %}
   {% route_count = 2 ** i %}
   module MyRouter{{route_count}}
     include Crouter
@@ -23,7 +23,7 @@ servers << fork do
   HTTP::Server.new(10_000) { |request| HTTP::Response.new(200, "raw throughput") }.listen
 end
 
-{% for i in 5..12 %}
+{% for i in 5..8 %}
   {% route_count = 2 ** i %}
   {% port = 10_001 + i - 5 %}
   servers << fork do
@@ -39,7 +39,7 @@ Benchmark.ips do |bm|
     response.body
   end
 
-  {% for i in 5..12 %}
+  {% for i in 5..8 %}
     {% route_count = 2 ** i %}
     {% port = 10_001 + i - 5 %}
 

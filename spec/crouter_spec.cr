@@ -16,7 +16,7 @@ class TestController
 
   def bar
     Spy.bar
-    params["bar"]?.should eq("foo")
+    params["bar"]?.should eq("bar")
     HTTP::Response.new(200)
   end
 end
@@ -26,6 +26,7 @@ module TestRouter
 
   get "/foo(/:bar)", "TestController#foo"
   post "/foo(/:bar)", "TestController#bar"
+
   post "/foo/foo" do
     Spy.first_block
     HTTP::Response.new(200)
@@ -84,18 +85,18 @@ describe Crouter do
       Spy.bar_was_called?.should be_false
 
       Spy.reset!
-      request = HTTP::Request.new("POST", "/foo/foo")
+      request = HTTP::Request.new("POST", "/foo/bar")
       TestRouter.route(request)
       Spy.bar_was_called?.should be_true
       Spy.foo_was_called?.should be_false
     end
 
-    it "preserves route order and calls only one route" do
+    it "favors static routes and calls only one route" do
       Spy.reset!
       request = HTTP::Request.new("POST", "/foo/foo")
       TestRouter.route(request)
-      Spy.bar_was_called?.should be_true
-      Spy.first_block_was_called?.should be_false
+      Spy.first_block_was_called?.should be_true
+      Spy.bar_was_called?.should be_false
     end
 
     it "calls blocks" do
