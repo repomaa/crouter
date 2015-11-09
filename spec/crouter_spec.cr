@@ -1,7 +1,7 @@
 require "./crouter/*"
 require "./spec_helper"
 
-call_spy Spy, foo, bar, first_block, second_block
+call_spy Spy, foo, bar, first_block, second_block, prefix, without_prefix, sub_prefix, param_prefix
 
 class TestController
   private getter request, params
@@ -34,6 +34,34 @@ module TestRouter
   post "/bar" do
     Spy.second_block
     params["test"].should eq("foobar")
+    HTTP::Response.new(200)
+  end
+
+  group "/prefix" do
+    get "/foo(/:bar)" do
+      Spy.prefix
+      params["bar"].should eq("foobar")
+      HTTP::Response.new(200)
+    end
+
+    group "/sub_prefix" do
+      get "/foo" do
+        Spy.sub_prefix
+       HTTP::Response.new(200)
+      end
+    end
+  end
+
+  group "/param_prefix/:foo" do
+    get "/bar" do
+      Spy.param_prefix
+      params["foo"].should eq("test1")
+      HTTP::Response.new(200)
+    end
+  end
+
+  get "/without/prefix" do
+    Spy.without_prefix
     HTTP::Response.new(200)
   end
 
@@ -88,6 +116,36 @@ describe Crouter do
       result = TestRouter.route(request)
       result.should be_a(HTTP::Response)
       result.body.should eq(%({"test":"foobar"}))
+    end
+  end
+
+  describe "group" do
+    it "groups underlying routes by prepending a given prefix" do
+      Spy.reset!
+      request = HTTP::Request.new("GET", "/prefix/foo/foobar")
+      TestRouter.route(request)
+      Spy.prefix_was_called?.should be_true
+    end
+
+    it "it restores the prefix after the block" do
+      Spy.reset!
+      request = HTTP::Request.new("GET", "/without/prefix")
+      TestRouter.route(request)
+      Spy.without_prefix_was_called?.should be_true
+    end
+
+    it "it supports nesting" do
+      Spy.reset!
+      request = HTTP::Request.new("GET", "/prefix/sub_prefix/foo")
+      TestRouter.route(request)
+      Spy.sub_prefix_was_called?.should be_true
+    end
+
+    it "it supports params in group prefix" do
+      Spy.reset!
+      request = HTTP::Request.new("GET", "/param_prefix/test1/bar")
+      TestRouter.route(request)
+      Spy.param_prefix_was_called?.should be_true
     end
   end
 end

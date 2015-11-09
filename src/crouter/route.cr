@@ -6,7 +6,18 @@ module Crouter
       end
     end
 
-    def initialize(pattern, @action : (HTTP::Request, HTTP::Params) -> HTTP::Response, prefix = "")
+    @@prefix = ""
+    def self.prefixed(prefix : String)
+      old_prefix = @@prefix
+      @@prefix = "#{old_prefix}#{prefix}"
+      yield
+    ensure
+      @@prefix = old_prefix
+    end
+
+
+    def initialize(pattern, @action : (HTTP::Request, HTTP::Params) -> HTTP::Response)
+      pattern = "#{@@prefix}#{pattern}"
       raise Error.new(pattern, "must start with /") unless pattern[0] == '/'
       optional_count = pattern.count("(")
       if pattern[-optional_count, optional_count] != ")" * optional_count
@@ -22,7 +33,7 @@ module Crouter
           "(?<#{m[1]}>\\w+)"
         end
 
-      @matcher = /^#{Regex.escape(prefix)}#{pattern}($|\?.*)/
+      @matcher = /^#{pattern}($|\?.*)/
     end
 
     def match(path)

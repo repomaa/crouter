@@ -24,6 +24,10 @@ module Crouter
       HTTP::Response.new(404, "No route found for #{request.method} #{request.path}")
     end
 
+    macro group(prefix)
+      Route.prefixed(\{{prefix}}) { \{{yield}} }
+    end
+
     {% for method in methods %}
       macro {{method.downcase.id}}(pattern, action)
         \{% action_error = "action must be either a string of the form `Controller#action' or a Proc" %}
