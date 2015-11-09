@@ -1,4 +1,4 @@
-# crouter
+# crouter [![Build Status](https://travis-ci.org/jreinert/crouter.svg?branch=master)](https://travis-ci.org/jreinert/crouter)
 
 A standalone router for crystal
 
