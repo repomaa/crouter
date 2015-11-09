@@ -1,7 +1,7 @@
 require "../spec_helper"
 
 def empty_action
-  -> (request : HTTP::Request, params : HTTP::Params) {}
+  -> (request : HTTP::Request, params : HTTP::Params) { HTTP::Response.new(200) }
 end
 
 module Crouter
@@ -61,6 +61,7 @@ module Crouter
           params["format"]?.should eq("json")
           params["query1"]?.should eq("test3")
           params["query2"]?.should eq("test4")
+          HTTP::Response.new(200)
         }
         route = Route.new("/foo/:bar(/:optional(.:format))", action)
         path = "/foo/test1/test2.json?query1=test3&query2=test4"

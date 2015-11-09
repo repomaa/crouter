@@ -20,7 +20,8 @@ module Crouter
           end
       {% end %}
       end
-      nil
+
+      HTTP::Response.new(404, "No route found for #{request.method} #{request.path}")
     end
 
     {% for method in methods %}

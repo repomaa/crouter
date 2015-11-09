@@ -6,7 +6,7 @@ module Crouter
       end
     end
 
-    def initialize(pattern, @action : (HTTP::Request, HTTP::Params) ->, prefix = "")
+    def initialize(pattern, @action : (HTTP::Request, HTTP::Params) -> HTTP::Response, prefix = "")
       raise Error.new(pattern, "must start with /") unless pattern[0] == '/'
       optional_count = pattern.count("(")
       if pattern[-optional_count, optional_count] != ")" * optional_count
