@@ -10,6 +10,24 @@ A standalone router for crystal
 - support for query params (also mixed with route params)
 - most errors reveal themselves already at compile time
 
+## Benchmark results
+
+Benchmarked with non-trivial route patterns. See
+[src/benchmark.cr](src/benchmark.cr)
+
+```
+requests per second
+without router (raw server throughput)   9.86k (± 9.70%)       fastest
+         through router with 32 routes   8.68k (± 6.35%)  1.13× slower
+         through router with 64 routes   8.82k (± 9.57%)  1.12× slower
+        through router with 128 routes   7.76k (± 8.71%)  1.27× slower
+        through router with 256 routes   6.33k (± 5.79%)  1.56× slower
+        through router with 512 routes    5.1k (± 3.58%)  1.93× slower
+       through router with 1024 routes   3.41k (± 4.22%)  2.89× slower
+       through router with 2048 routes   2.02k (± 8.13%)  4.88× slower
+       through router with 4096 routes    939  (±23.32%) 10.50× slower
+```
+
 ## Installation
 
 Add this to your application's `shard.yml`:
