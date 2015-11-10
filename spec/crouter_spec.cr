@@ -1,7 +1,7 @@
 require "./crouter/*"
 require "./spec_helper"
 
-call_spy Spy, foo, bar, first_block, second_block, prefix, without_prefix, sub_prefix, param_prefix
+call_spy Spy, foo, bar, first_block, second_block, prefix, without_prefix, sub_prefix, param_prefix, trailing, non_trailing
 
 class TestController
   private getter request, params
@@ -73,6 +73,16 @@ module TestRouter
     else HTTP::Response.new(400, "invalid format")
     end
   end
+
+  get "/trailing/" do
+    Spy.trailing
+    HTTP::Response.new(200)
+  end
+
+  get "/non-trailing" do
+    Spy.non_trailing
+    HTTP::Response.new(200)
+  end
 end
 
 describe Crouter do
@@ -117,6 +127,18 @@ describe Crouter do
       result = TestRouter.route(request)
       result.should be_a(HTTP::Response)
       result.body.should eq(%({"test":"foobar"}))
+    end
+
+    it "matches trailing / variants of a route and vice versa" do
+      Spy.reset!
+      request = HTTP::Request.new("GET", "/trailing")
+      TestRouter.route(request)
+      Spy.trailing_was_called?.should be_true
+
+      Spy.reset!
+      request = HTTP::Request.new("GET", "/non-trailing/")
+      TestRouter.route(request)
+      Spy.non_trailing_was_called?.should be_true
     end
   end
 

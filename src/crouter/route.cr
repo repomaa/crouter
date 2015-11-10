@@ -23,7 +23,7 @@ module Crouter
       pattern = "#{@@prefix}#{pattern}"
       raise Error.new(pattern, "must start with /") unless pattern[0] == '/'
       optional_count = pattern.count("(")
-      if pattern[-optional_count, optional_count] != ")" * optional_count
+      if pattern.gsub(/\/$/, "")[-optional_count, optional_count] != ")" * optional_count
         raise Error.new(pattern, "optional parts must be right aligned")
       end
 

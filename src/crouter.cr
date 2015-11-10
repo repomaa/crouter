@@ -34,7 +34,14 @@ module Crouter
     end
 
     {% for method in methods %}
-      macro {{method.downcase.id}}(pattern, action)
+      macro {{method.downcase.id}}(pattern, action, with_variant = true)
+        \{% if with_variant %}
+          \{% if pattern =~ /\/$/ %}
+             {{method.downcase.id}}(\{{pattern.gsub(/\/$/, "")}}, \{{action}}, false)
+          \{% else %}
+             {{method.downcase.id}}(\{{"#{pattern.id}/"}}, \{{action}}, false)
+          \{% end %}
+        \{% end %}
         \{% action_error = "action must be either a string of the form `Controller#action' or a Proc" %}
         \{% if action.is_a?(StringLiteral) %}
           \{% controller = action.split("#")[0] %}
@@ -51,9 +58,7 @@ module Crouter
 
       macro {{method.downcase.id}}(pattern)
         \{% action = "-> (request : HTTP::Request, params : HTTP::Params) { #{yield} }" %}
-        \{% static_part = %["\#{Route.prefix}#{pattern.id}".gsub(/(\\:|\\().*/, "")] %}
-        ROUTES[{{method}}][\{{static_part.id}}] ||= [] of Route
-        ROUTES[{{method}}][\{{static_part.id}}] << Route.new(\{{pattern}}, \{{action.id}})
+        {{method.downcase.id}}(\{{pattern}}, \{{action.id}})
       end
     {% end %}
   end
