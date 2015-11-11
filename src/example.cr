@@ -11,9 +11,7 @@ class MyController
   end
 end
 
-module MyRouter
-  include Crouter
-
+class MyRouter < Crouter::Router
   get "/" do
     HTTP::Response.new(200, "hello world")
   end
@@ -39,4 +37,4 @@ module MyRouter
 end
 
 puts "Listening on http://127.0.0.1:8989"
-HTTP::Server.new(8989) { |request| MyRouter.route(request) }.listen
+HTTP::Server.new(8989, [HTTP::LogHandler.new, MyRouter.new]).listen

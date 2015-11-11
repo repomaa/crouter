@@ -2,10 +2,8 @@ require "./route"
 require "http/server"
 
 module Crouter
-  class Router < HTTP::Handler
-    def initialize(mountpoint = "")
-      @mountpoint = mountpoint.gsub(/\/$/, "")
-    end
+  abstract class Router < HTTP::Handler
+    abstract def call(request)
 
     macro inherited
       {% methods = %i(GET POST PUT PATCH DELETE) %}
@@ -15,16 +13,20 @@ module Crouter
         {% end %}
       }
 
-      def call(request) : HTTP::Response
+      def self.routes
+        ROUTES
+      end
+
+      def call(request)
         path = request.path || "/"
         return call_next(request) unless path.starts_with?(@mountpoint)
         path = path[@mountpoint.size..-1]
         case(request.method)
         {% for method in methods %}
           when {{method.id.stringify}}
-            (1...path.size).each do |i|
+            (1..path.size).each do |i|
               path_slice = path[0..-i]
-              next unless routes = ROUTES[{{method}}][path_slice]?
+              next unless routes = self.class.routes[{{method}}][path_slice]?
               routes.each do |route|
                 next unless match = route.match(path)
                 return route.call_action(request, match)
@@ -68,6 +70,10 @@ module Crouter
           {{method.downcase.id}}(\{{pattern}}, \{{action.id}})
         end
       {% end %}
+    end
+
+    def initialize(mountpoint = "")
+      @mountpoint = mountpoint.gsub(/\/$/, "")
     end
   end
 end
