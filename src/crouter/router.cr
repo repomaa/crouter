@@ -16,7 +16,7 @@ module Crouter
       }
 
       def call(request) : HTTP::Response
-        path = request.path || ""
+        path = request.path || "/"
         return call_next(request) unless path.starts_with?(@mountpoint)
         path = path[@mountpoint.size..-1]
         case(request.method)
@@ -42,7 +42,7 @@ module Crouter
 
       {% for method in methods %}
         macro {{method.downcase.id}}(pattern, action, with_variant = true)
-          \{% if with_variant %}
+          \{% if with_variant && pattern != "/" %}
             \{% if pattern =~ /\/$/ %}
                {{method.downcase.id}}(\{{pattern.gsub(/\/$/, "")}}, \{{action}}, false)
             \{% else %}
