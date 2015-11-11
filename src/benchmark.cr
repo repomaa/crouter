@@ -3,8 +3,7 @@ require "benchmark"
 
 {% for i in 5..8 %}
   {% route_count = 2 ** i %}
-  module MyRouter{{route_count}}
-    include Crouter
+  class MyRouter{{route_count}} < Crouter::Router
     \{% for i in 0..{{route_count}} %}
       get "/route_{{i}}(/:param1(/:param2))" do
         param1, param2 = { params["param1"]?, params["param2"]? }.map { |param| param || "nothing" }
@@ -27,7 +26,7 @@ end
   {% route_count = 2 ** i %}
   {% port = 10_001 + i - 5 %}
   servers << fork do
-    HTTP::Server.new({{port}}) { |request| MyRouter{{route_count.id}}.route(request) }.listen
+    HTTP::Server.new({{port}}), [MyRouter{{route_count.id}}.new]).listen
   end
 {% end %}
 
