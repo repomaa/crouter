@@ -28,7 +28,7 @@ module Crouter
       end
 
       @params = [] of String
-      pattern = Regex.escape(pattern)
+      escaped_pattern = Regex.escape(pattern)
         .gsub("\\(", "(?:")
         .gsub("\\)", ")?")
         .gsub(/\\:(\w+)?/) do |_, m|
@@ -36,7 +36,8 @@ module Crouter
           "(?<#{m[1]}>\\w+)"
         end
 
-      @matcher = /^#{pattern}($|\?.*)/
+      @matcher = /^#{escaped_pattern}($|\?.*)/
+      puts "set up route #{pattern} to match #{@matcher}"
     end
 
     def match(path)
