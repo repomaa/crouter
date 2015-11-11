@@ -52,10 +52,8 @@ class MyController
   end
 end
 
-module MyRouter
-  include Crouter
-
-  get "/some/path" do
+class MyRouter < Crouter::Router
+  get "/" do
     HTTP::Response.new(200, "hello world")
   end
 
@@ -79,8 +77,19 @@ module MyRouter
   end
 end
 
+class MyRestAPI < Crouter::Router
+  group "/posts" do
+    get    "/",         "PostsController#index"
+    get    "/:id",      "PostsController#show"
+    get    "/:id/edit", "PostsController#edit"
+    post   "/",         "PostsController#create"
+    put    "/:id",      "PostsController#update"
+    delete "/:id",      "PostsController#delete"
+  end
+end
+
 puts "Listening on http://localhost:8989"
-HTTP::Server.new(8989) { |request| MyRouter.route(request) }
+HTTP::Server.new(8989, [HTTP::LogHandler.new, MyRestAPI.new("/api"), MyRouter.new])
 ```
 
 ## Contributing
