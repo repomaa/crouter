@@ -26,7 +26,7 @@ end
   {% route_count = 2 ** i %}
   {% port = 10_001 + i - 5 %}
   servers << fork do
-    HTTP::Server.new({{port}}), [MyRouter{{route_count.id}}.new]).listen
+    HTTP::Server.new({{port}}, MyRouter{{route_count.id}}.new).listen
   end
 {% end %}
 
