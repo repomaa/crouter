@@ -7,11 +7,7 @@ module Crouter
 
     macro inherited
       {% methods = %i(GET POST PUT PATCH DELETE) %}
-      ROUTES = {
-        {% for method in methods %}
-          {{method.id}}: {} of String => Array(Crouter::Route),
-        {% end %}
-      }
+      ROUTES = {} of String => Array(Crouter::Route)
 
       def self.routes
         ROUTES
@@ -21,18 +17,13 @@ module Crouter
         path = request.path || "/"
         return call_next(request) unless path.starts_with?(@mountpoint)
         path = path[@mountpoint.size..-1]
-        case(request.method)
-        {% for method in methods %}
-          when {{method.id.stringify}}
-            (1..path.size).each do |i|
-              path_slice = path[0..-i]
-              next unless routes = self.class.routes[{{method}}][path_slice]?
-              routes.each do |route|
-                next unless match = route.match(path)
-                return route.call_action(request, match)
-              end
-            end
-        {% end %}
+        (1..path.size).each do |i|
+          path_slice = path[0..-i]
+          next unless routes = self.class.routes[path_slice]?
+          routes.each do |route|
+            next unless match = route.match(request.method, path)
+            return route.call_action(request, match)
+          end
         end
 
         call_next(request)
@@ -43,14 +34,7 @@ module Crouter
       end
 
       {% for method in methods %}
-        macro {{method.downcase.id}}(pattern, action, with_variant = true)
-          \{% if with_variant && (pattern != "/" || Crouter::Route.prefix != "") %}
-            \{% if pattern =~ /\/$/ %}
-               {{method.downcase.id}}(\{{pattern.gsub(/\/$/, "")}}, \{{action}}, false)
-            \{% else %}
-               {{method.downcase.id}}(\{{"#{pattern.id}/"}}, \{{action}}, false)
-            \{% end %}
-          \{% end %}
+        macro {{method.downcase.id}}(pattern, action)
           \{% action_error = "action must be either a string of the form `Controller#action' or a Proc" %}
           \{% if action.is_a?(StringLiteral) %}
             \{% controller = action.split("#")[0] %}
@@ -60,9 +44,9 @@ module Crouter
           \{% elsif !action.is_a?(FunLiteral) %}
              \{% raise(action_error) %}
           \{% end %}
-          \{% static_part = %["\#{Crouter::Route.prefix}#{pattern.id}".gsub(/(\\:|\\().*/, "")] %}
-          ROUTES[{{method}}][\{{static_part.id}}] ||= [] of Crouter::Route
-          ROUTES[{{method}}][\{{static_part.id}}] << Crouter::Route.new(\{{pattern}}, \{{action.id}})
+          \{% static_part = %["\#{Crouter::Route.prefix}#{pattern.id}".gsub(/(\\:|\\(|\\/$).*/, "")] %}
+          ROUTES[\{{static_part.id}}] ||= [] of Crouter::Route
+          ROUTES[\{{static_part.id}}] << Crouter::Route.new({{method.id.stringify}}, \{{pattern}}, \{{action.id}})
         end
 
         macro {{method.downcase.id}}(pattern)

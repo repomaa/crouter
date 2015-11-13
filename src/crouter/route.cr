@@ -19,16 +19,18 @@ module Crouter
       @@prefix
     end
 
-    def initialize(pattern, @action : (HTTP::Request, HTTP::Params) -> HTTP::Response)
-      pattern = "#{@@prefix}#{pattern}"
-      raise Error.new(pattern, "must start with /") unless pattern[0] == '/'
+    def initialize(@method, pattern, @action : (HTTP::Request, HTTP::Params) -> HTTP::Response)
+      original_pattern = "#{@@prefix}#{pattern}"
+      pattern = original_pattern.gsub(/\/$/, "")
+
+      raise Error.new(pattern, "must start with /") unless original_pattern[0] == '/'
       optional_count = pattern.count("(")
-      if pattern.gsub(/\/$/, "")[-optional_count, optional_count] != ")" * optional_count
+      if pattern[-optional_count, optional_count] != ")" * optional_count
         raise Error.new(pattern, "optional parts must be right aligned")
       end
 
       @params = [] of String
-      escaped_pattern = Regex.escape(pattern)
+      pattern = Regex.escape(pattern)
         .gsub("\\(", "(?:")
         .gsub("\\)", ")?")
         .gsub(/\\:(\w+)?/) do |_, m|
@@ -36,11 +38,12 @@ module Crouter
           "(?<#{m[1]}>\\w+)"
         end
 
-      @matcher = /^#{escaped_pattern}($|\?.*)/
-      puts "set up route #{pattern} to match #{@matcher}"
+      @matcher = /^#{pattern}\/?($|\?.*)/
+      puts "set up route #{@method} #{original_pattern} to match #{@matcher}"
     end
 
-    def match(path)
+    def match(method, path)
+      return nil unless method == @method
       path.match(@matcher)
     end
 
