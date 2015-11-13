@@ -44,7 +44,7 @@ module Crouter
 
       {% for method in methods %}
         macro {{method.downcase.id}}(pattern, action, with_variant = true)
-          \{% if with_variant && pattern != "/" %}
+          \{% if with_variant && (pattern != "/" || Crouter::Route.prefix != "") %}
             \{% if pattern =~ /\/$/ %}
                {{method.downcase.id}}(\{{pattern.gsub(/\/$/, "")}}, \{{action}}, false)
             \{% else %}
