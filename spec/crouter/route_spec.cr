@@ -81,5 +81,30 @@ describe Crouter::Route do
       match.should_not be_nil
       route.call_action(request, match.not_nil!)
     end
+
+    it "parses a post request body if it's a application/x-www-form-urlencoded" do
+      action = -> (request : HTTP::Request, params : HTTP::Params) {
+        params["bar"].should eq("test1")
+        params["optional"]?.should eq("test2")
+        params["format"]?.should eq("json")
+        params["form1"]?.should eq("test3")
+        params["form2"]?.should eq("test4")
+        HTTP::Response.new(200)
+      }
+      route = Crouter::Route.new("POST", "/foo/:bar(/:optional(.:format))", action)
+      path = "/foo/test1/test2.json"
+      form = HTTP::Params.build do |form|
+        form.add "form1", "test3"
+        form.add "form2", "test4"
+      end
+      request = HTTP::Request.new(
+        "POST", path,
+        body: form,
+        headers: HTTP::Headers{"Content-Type": "application/x-www-form-urlencoded"}
+      )
+      match = route.match("POST", path)
+      match.should_not be_nil
+      route.call_action(request, match.not_nil!)
+    end
   end
 end

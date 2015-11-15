@@ -48,15 +48,23 @@ module Crouter
     end
 
     def call_action(request, match)
-      @action.call(request, combined_params(request.query_params, match))
+      @action.call(request, combined_params(request, match))
     end
 
-    private def combined_params(query_params, match)
+    private def combined_params(request, match)
       raw_params = {} of String => Array(String)
-      query_params.each do |name, value|
+      request.query_params.each do |name, value|
         array = raw_params[name] ||= [] of String
         array << value
       end
+
+      if request.headers["Content-Type"]? == "application/x-www-form-urlencoded"
+        HTTP::Params.parse(request.body || "") do |name, value|
+          array = raw_params[name] ||= [] of String
+          array << value
+        end
+      end
+
       @params.each do |name|
         value = match[name]?
         next unless value
