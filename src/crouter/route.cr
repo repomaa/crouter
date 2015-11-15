@@ -19,7 +19,7 @@ module Crouter
       @@prefix
     end
 
-    def initialize(@method, pattern, @action : (HTTP::Request, HTTP::Params) -> HTTP::Response)
+    def initialize(@method, pattern, @action : (HTTP::Request, HTTP::Params) -> HTTP::Response?)
       original_pattern = "#{@@prefix}#{pattern}"
       pattern = original_pattern.gsub(/\/$/, "")
 
