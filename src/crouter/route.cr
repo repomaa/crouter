@@ -35,11 +35,11 @@ module Crouter
         .gsub("\\)", ")?")
         .gsub(/\\:(\w+)?/) do |_, m|
           @params << m[1]
-          "(?<#{m[1]}>\\w+)"
+          "(?<#{m[1]}>(?:[A-Za-z0-9\\-._~/!$&'()*+,;=:@]|%[a-fA-F0-9]{2}?)+?)"
         end
 
       @matcher = /^#{pattern}\/?($|\?.*)/
-      puts "set up route #{@method} #{original_pattern} to match #{@matcher}"
+      puts "set up route #{@method} #{original_pattern}"
     end
 
     def match(method, path)

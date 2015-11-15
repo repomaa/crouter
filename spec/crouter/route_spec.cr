@@ -46,12 +46,20 @@ describe Crouter::Route do
       match = match.not_nil!
       match["format"].should eq("json")
       match = route.match("GET", "/foo/test1:json")
-      match.should be_nil
+      match.should_not be_nil
+      match = match.not_nil!
+      match["bar"].should eq("test1:json")
     end
 
     it "matches paths with query params" do
       route = route("/foo/:bar(/:optional(.:format))")
       match = route.match("GET", "/foo/test1/test2.json?foo=bar")
+      match.should_not be_nil
+    end
+
+    it "allows slashes in params" do
+      route = route("/foo/:bar/baz")
+      match = route.match("GET", "/foo/bar/foobar/baz")
       match.should_not be_nil
     end
   end
