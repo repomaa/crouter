@@ -19,7 +19,7 @@ module Crouter
       @@prefix
     end
 
-    def initialize(@method, pattern, @action : (HTTP::Request, HTTP::Params) -> HTTP::Response)
+    def initialize(@method, pattern, @action : (HTTP::Server::Context, HTTP::Params) -> _)
       original_pattern = "#{@@prefix}#{pattern}"
       pattern = original_pattern.gsub(/\/$/, "")
 
@@ -39,7 +39,6 @@ module Crouter
         end
 
       @matcher = /^#{pattern}\/?($|\?.*)/
-      puts "set up route #{@method} #{original_pattern}"
     end
 
     def match(method, path)
@@ -47,8 +46,8 @@ module Crouter
       path.match(@matcher)
     end
 
-    def call_action(request, match)
-      @action.call(request, combined_params(request, match))
+    def call_action(context, match)
+      @action.call(context, combined_params(context.request, match))
     end
 
     private def combined_params(request, match)

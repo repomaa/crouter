@@ -19,7 +19,7 @@ end
 
 servers = [] of Process
 servers << fork do
-  HTTP::Server.new(10_000) { |request| HTTP::Response.new(200, "raw throughput") }.listen
+  HTTP::Server.new(10_000) { |context| HTTP::Response.new(200, "raw throughput") }.listen
 end
 
 {% for i in 5..8 %}
@@ -31,7 +31,7 @@ end
 {% end %}
 
 Benchmark.ips do |bm|
-  puts "requests per second"
+  puts "contexts per second"
 
   bm.report("without router (raw server throughput)") do
     response = HTTP::Client.get(url_gen(10_000, 10_000))

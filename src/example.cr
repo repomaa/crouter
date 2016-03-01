@@ -1,8 +1,8 @@
 require "./crouter"
 
 class MyController
-  private getter request, params
-  def initialize(@request, @params)
+  private getter context, params
+  def initialize(@context, @params)
   end
 
   def my_action
