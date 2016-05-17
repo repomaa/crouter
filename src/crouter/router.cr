@@ -56,6 +56,8 @@ module Crouter
       {% end %}
     end
 
+    @mountpoint : String
+
     def initialize(mountpoint = "")
       @mountpoint = mountpoint.gsub(/\/$/, "")
     end
