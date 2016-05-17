@@ -12,14 +12,14 @@ module Crouter
       @@prefix = "#{old_prefix}#{prefix}"
       yield
     ensure
-      @@prefix = old_prefix
+      @@prefix = old_prefix.not_nil!
     end
 
     def self.prefix
       @@prefix
     end
 
-    def initialize(@method, pattern, @action : (HTTP::Server::Context, HTTP::Params) -> _)
+    def initialize(@method : String, pattern, @action : (HTTP::Server::Context, HTTP::Params) -> Nil)
       original_pattern = "#{@@prefix}#{pattern}"
       pattern = original_pattern.gsub(/\/$/, "")
 

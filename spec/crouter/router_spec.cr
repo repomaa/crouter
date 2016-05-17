@@ -4,7 +4,7 @@ call_spy Spy, foo, bar, first_block, second_block, prefix, without_prefix, sub_p
 
 class TestController
   private getter context, params
-  def initialize(@context, @params)
+  def initialize(@context : HTTP::Server::Context, @params : HTTP::Params)
   end
 
   def foo
