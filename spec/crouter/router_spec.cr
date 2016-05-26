@@ -1,6 +1,6 @@
 require "../spec_helper"
 
-call_spy Spy, foo, bar, first_block, second_block, prefix, without_prefix, sub_prefix, param_prefix, trailing, non_trailing
+call_spy Spy, foo, bar, root, first_block, second_block, prefix, without_prefix, sub_prefix, param_prefix, trailing, non_trailing
 
 class TestController
   private getter context, params
@@ -21,6 +21,10 @@ end
 class TestRouter < Crouter::Router
   get "/foo(/:bar)", "TestController#foo"
   post "/foo(/:bar)", "TestController#bar"
+
+  get "/" do
+    Spy.root
+  end
 
   post "/foo/foo" do
     Spy.first_block
@@ -96,6 +100,12 @@ describe Crouter::Router do
       route("POST", "/foo/bar")
       Spy.bar_was_called?.should be_true
       Spy.foo_was_called?.should be_false
+    end
+
+    it "routes root paths" do
+      Spy.reset!
+      route("GET", "/")
+      Spy.root_was_called?.should be_true
     end
 
     it "favors static routes and calls only one route" do

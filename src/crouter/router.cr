@@ -17,8 +17,8 @@ module Crouter
         path = context.request.path || "/"
         return call_next(context) unless path.starts_with?(@mountpoint)
         path = path[@mountpoint.size..-1]
-        (1..path.size).each do |i|
-          path_slice = path[0..-i]
+        (0..path.size).reverse_each do |i|
+          path_slice = path[0...i]
           next unless routes = self.class.routes[path_slice]?
           routes.each do |route|
             next unless match = route.match(context.request.method, path)
