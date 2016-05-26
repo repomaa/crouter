@@ -7,46 +7,39 @@ require "benchmark"
     \{% for i in 0..{{route_count}} %}
       get "/route_{{i}}(/:param1(/:param2))" do
         param1, param2 = { params["param1"]?, params["param2"]? }.map { |param| param || "nothing" }
-        return HTTP::Response.new(200, "hi from route_{{i}}, you passed #{param1} and #{param2}")
+        context.response << "hi from route_{{i}}, you passed #{param1} and #{param2}"
       end
     \{% end %}
   end
 {% end %}
 
-def url_gen(max_index, port)
-  "http://127.0.0.1:#{port}/route_#{rand(0..max_index)}#{"/foo#{"/bar" if rand < 5}" if rand < 5}"
+raw_handler = ->(context : HTTP::Server::Context) { context.response << "raw throughput" }
+
+def route_gen(max_index)
+  "/route_#{rand(0..max_index)}#{"/foo#{"/bar" if rand < 5}" if rand < 5}"
 end
 
-servers = [] of Process
-servers << fork do
-  HTTP::Server.new(10_000) { |context| HTTP::Response.new(200, "raw throughput") }.listen
+def send_request(router, route)
+  request = HTTP::Request.new("GET", route)
+  response = HTTP::Server::Response.new(MemoryIO.new)
+  context = HTTP::Server::Context.new request, response
+  router.call(context)
+  response
 end
-
-{% for i in 5..8 %}
-  {% route_count = 2 ** i %}
-  {% port = 10_001 + i - 5 %}
-  servers << fork do
-    HTTP::Server.new({{port}}, MyRouter{{route_count.id}}.new).listen
-  end
-{% end %}
 
 Benchmark.ips do |bm|
-  puts "contexts per second"
+  puts "requests per second"
 
   bm.report("without router (raw server throughput)") do
-    response = HTTP::Client.get(url_gen(10_000, 10_000))
-    response.body
+    send_request raw_handler, route_gen(10_000)
   end
 
   {% for i in 5..8 %}
     {% route_count = 2 ** i %}
-    {% port = 10_001 + i - 5 %}
+    %router = MyRouter{{route_count.id}}.new
 
     bm.report("through router with {{route_count}} routes") do
-      response = HTTP::Client.get(url_gen({{route_count}}, {{ port }}))
-      response.body
+      send_request %router, route_gen({{route_count}})
     end
   {% end %}
 end
-
-servers.each { |process| process.kill(Signal::TERM) }
