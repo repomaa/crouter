@@ -41,7 +41,7 @@ module Crouter
             \{% action = action.split("#")[1] %}
             \{% raise(action_error) unless controller && action %}
             \{% action = "-> (context : HTTP::Server::Context, params : HTTP::Params) { controller = #{controller.id}.new(context, params); controller.#{action.id}; nil }" %}
-          \{% elsif !action.is_a?(FunLiteral) %}
+          \{% elsif !action.is_a?(ProcLiteral) %}
              \{% raise(action_error) %}
           \{% end %}
           \{% static_part = %["\#{Crouter::Route.prefix}#{pattern.id}".gsub(/(\\:|\\(|\\/$).*/, "")] %}

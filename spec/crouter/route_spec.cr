@@ -102,7 +102,7 @@ describe Crouter::Route do
         HTTP::Request.new(
           "POST", path,
           body: form,
-          headers: HTTP::Headers{"Content-Type": "application/x-www-form-urlencoded"}
+          headers: HTTP::Headers{"Content-Type" => "application/x-www-form-urlencoded"}
         ),
         HTTP::Server::Response.new(MemoryIO.new)
       )
