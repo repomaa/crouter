@@ -21,7 +21,7 @@ end
 
 def send_request(router, route)
   request = HTTP::Request.new("GET", route)
-  response = HTTP::Server::Response.new(MemoryIO.new)
+  response = HTTP::Server::Response.new(IO::Memory.new)
   context = HTTP::Server::Context.new request, response
   router.call(context)
   response
