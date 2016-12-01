@@ -2,6 +2,7 @@ require "./crouter"
 
 class MyController
   private getter context : HTTP::Server::Context, params : HTTP::Params
+
   def initialize(@context, @params)
   end
 

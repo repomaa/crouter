@@ -4,6 +4,7 @@ call_spy Spy, foo, bar, root, first_block, second_block, prefix, without_prefix,
 
 class TestController
   private getter context, params
+
   def initialize(@context : HTTP::Server::Context, @params : HTTP::Params)
   end
 
@@ -62,8 +63,8 @@ class TestRouter < Crouter::Router
   get "/return.:format" do
     case params["format"]
     when "json" then context.response.print %({"test":"foobar"})
-    when "xml" then context.response.print %(<?xml version="1.0" encoding="utf-8"?><test>foobar</test>)
-    else 
+    when "xml"  then context.response.print %(<?xml version="1.0" encoding="utf-8"?><test>foobar</test>)
+    else
       context.response.status_code = 400
       context.response.print "invalid format"
     end
@@ -79,13 +80,13 @@ class TestRouter < Crouter::Router
 end
 
 def route(method, path, router_mount_point = "")
-  io = MemoryIO.new
+  io = IO::Memory.new
   request = HTTP::Request.new(method, path)
   response = HTTP::Server::Response.new(io)
   context = HTTP::Server::Context.new(request, response)
   TestRouter.new(router_mount_point).call(context)
   response.flush
-  { response, io.to_s }
+  {response, io.to_s}
 end
 
 describe Crouter::Router do

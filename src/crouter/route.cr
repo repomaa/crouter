@@ -7,6 +7,7 @@ module Crouter
     end
 
     @@prefix = ""
+
     def self.prefixed(prefix : String)
       old_prefix = @@prefix
       @@prefix = "#{old_prefix}#{prefix}"
@@ -29,14 +30,15 @@ module Crouter
         raise Error.new(pattern, "optional parts must be right aligned")
       end
 
-      @params = [] of String
       pattern = Regex.escape(pattern)
-        .gsub("\\(", "(?:")
-        .gsub("\\)", ")?")
-        .gsub(/\\:(\w+)?/) do |_, m|
-          @params << m[1]
-          "(?<#{m[1]}>(?:[A-Za-z0-9\\-._~/!$&'()*+,;=:@]|%[a-fA-F0-9]{2}?)+?)"
-        end
+                     .gsub("\\(", "(?:")
+                     .gsub("\\)", ")?")
+
+      @params = [] of String
+      pattern = pattern.gsub(/\\:(\w+)?/) do |_, m|
+        @params << m[1]
+        "(?<#{m[1]}>(?:[A-Za-z0-9\\-._~/!$&'()*+,;=:@]|%[a-fA-F0-9]{2}?)+?)"
+      end
 
       @matcher = /^#{pattern}\/?($|\?.*)/
     end
@@ -58,7 +60,8 @@ module Crouter
       end
 
       if request.headers["Content-Type"]? == "application/x-www-form-urlencoded"
-        HTTP::Params.parse(request.body || "") do |name, value|
+        body = request.body.try(&.gets_to_end)
+        HTTP::Params.parse(body || "") do |name, value|
           array = raw_params[name] ||= [] of String
           array << value
         end

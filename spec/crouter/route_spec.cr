@@ -1,7 +1,7 @@
 require "../spec_helper"
 
 def empty_action
-  -> (context : HTTP::Server::Context, params : HTTP::Params) {}
+  ->(context : HTTP::Server::Context, params : HTTP::Params) {}
 end
 
 def def_route(pattern, action = empty_action)
@@ -66,7 +66,7 @@ describe Crouter::Route do
 
   describe "#call_action" do
     it "calls the action passed to the initializer with the passed context and params" do
-      action = -> (context : HTTP::Server::Context, params : HTTP::Params) {
+      action = ->(context : HTTP::Server::Context, params : HTTP::Params) {
         params["bar"].should eq("test1")
         params["optional"]?.should eq("test2")
         params["format"]?.should eq("json")
@@ -77,7 +77,7 @@ describe Crouter::Route do
       path = "/foo/test1/test2.json?query1=test3&query2=test4"
       context = HTTP::Server::Context.new(
         HTTP::Request.new("GET", path),
-        HTTP::Server::Response.new(MemoryIO.new)
+        HTTP::Server::Response.new(IO::Memory.new)
       )
       match = route.match("GET", path)
       match.should_not be_nil
@@ -85,7 +85,7 @@ describe Crouter::Route do
     end
 
     it "parses a post request body if it's a application/x-www-form-urlencoded" do
-      action = -> (context : HTTP::Server::Context, params : HTTP::Params) {
+      action = ->(context : HTTP::Server::Context, params : HTTP::Params) {
         params["bar"].should eq("test1")
         params["optional"]?.should eq("test2")
         params["format"]?.should eq("json")
@@ -104,7 +104,7 @@ describe Crouter::Route do
           body: form,
           headers: HTTP::Headers{"Content-Type" => "application/x-www-form-urlencoded"}
         ),
-        HTTP::Server::Response.new(MemoryIO.new)
+        HTTP::Server::Response.new(IO::Memory.new)
       )
       match = route.match("POST", path)
       match.should_not be_nil
