@@ -2,7 +2,8 @@ require "./route"
 require "http/server"
 
 module Crouter
-  abstract class Router < HTTP::Handler
+  abstract class Router
+    include HTTP::Handler
     abstract def call(context)
 
     macro inherited
