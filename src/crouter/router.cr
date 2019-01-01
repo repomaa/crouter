@@ -41,7 +41,7 @@ module Crouter
             \{% controller = action.split("#")[0] %}
             \{% action = action.split("#")[1] %}
             \{% raise(action_error) unless controller && action %}
-            \{% action = "-> (context : HTTP::Server::Context, params : HTTP::Params) { controller = #{controller.id}.new(context, params); controller.#{action.id}; nil }" %}
+            \{% action = "-> (context : ::HTTP::Server::Context, params : ::HTTP::Params) { controller = #{controller.id}.new(context, params); controller.#{action.id}; nil }" %}
           \{% elsif !action.is_a?(ProcLiteral) %}
              \{% raise(action_error) %}
           \{% end %}
@@ -51,7 +51,7 @@ module Crouter
         end
 
         macro {{method.downcase.id}}(pattern)
-          \{% action = "-> (context : HTTP::Server::Context, params : HTTP::Params) { #{yield}; nil }" %}
+          \{% action = "-> (context : ::HTTP::Server::Context, params : ::HTTP::Params) { #{yield}; nil }" %}
           {{method.downcase.id}}(\{{pattern}}, \{{action.id}})
         end
       {% end %}
