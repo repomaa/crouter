@@ -8,7 +8,7 @@ module Crouter
 
     @@prefix = ""
 
-    def self.prefixed(prefix : String)
+    def self.prefixed(prefix : String, &)
       old_prefix = @@prefix
       @@prefix = "#{old_prefix}#{prefix}"
       yield
@@ -31,8 +31,8 @@ module Crouter
       end
 
       pattern = Regex.escape(pattern)
-                     .gsub("\\(", "(?:")
-                     .gsub("\\)", ")?")
+        .gsub("\\(", "(?:")
+        .gsub("\\)", ")?")
 
       @params = [] of String
       pattern = pattern.gsub(/\\:(\w+)?/) do |_, m|

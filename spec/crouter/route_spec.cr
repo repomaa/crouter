@@ -1,7 +1,7 @@
 require "../spec_helper"
 
 def empty_action
-  ->(context : HTTP::Server::Context, params : HTTP::Params) {}
+  ->(context : HTTP::Server::Context, params : HTTP::Params) { }
 end
 
 def def_route(pattern, action = empty_action)
