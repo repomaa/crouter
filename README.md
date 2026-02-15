@@ -102,4 +102,4 @@ HTTP::Server.new(8989, [HTTP::LogHandler.new, MyRestAPI.new("/api"), MyRouter.ne
 ## Contributors
 
 - [repomaa](https://github.com/repomaa) Joakim Repomaa - creator, maintainer
-- [![Contributors](https://contribs.rocks/image?repo=repomaa/crouter)](https://github.com/repomaa/crouter/graphs/contributors)
+- [![Contributors](https://contrib.rocks/image?repo=repomaa/crouter)](https://github.com/repomaa/crouter/graphs/contributors)
